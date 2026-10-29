@@ -111,3 +111,62 @@ export async function routeAndExecute(
     `All provider deployments failed. Attempts: ${JSON.stringify(attempts)}`
   );
 }
+
+
+export async function* routeAndStream(
+  request: GatewayRequest,
+  signal?: AbortSignal
+): AsyncIterable<string> {
+  const deployments = resolveModel(request.model);
+
+  for (let i = 0; i < deployments.length; i++) {
+    const deployment = deployments[i]!;
+    const adapter = adapters[deployment.provider];
+
+    if (!adapter) {
+      continue;
+    }
+
+    const apiKey =
+      deployment.provider === 'gemini'
+        ? process.env.GEMINI_API_KEY
+        : process.env.GROQ_API_KEY;
+
+    if (!apiKey) {
+      continue;
+    }
+
+    let hasYieldedTokens = false;
+
+    try {
+      const stream = adapter.stream(
+        { ...request, model: deployment.providerModel },
+        { apiKey, signal }
+      );
+
+      for await (const chunk of stream) {
+        hasYieldedTokens = true;
+        yield chunk;
+      }
+
+      // Stream successfully finished
+      return;
+    } catch (error) {
+      console.warn(
+        ` [Stream Failover] ${deployment.provider} (${deployment.providerModel}) failed: ${(error as Error).message}`
+      );
+
+      // THE MID-STREAM RULE:
+      // If tokens were already sent to the client,do not failover to another model
+      if (hasYieldedTokens) {
+        yield `data: {"error": {"message": "Stream interrupted mid-generation: ${(error as Error).message}", "type": "stream_error"}}\n\n`;
+        yield 'data: [DONE]\n\n';
+        return;
+      }
+
+      // If no tokens were sent yet, safe to continue to next deployment!
+    }
+  }
+
+  throw new Error('All model deployments failed to stream completion.');
+}

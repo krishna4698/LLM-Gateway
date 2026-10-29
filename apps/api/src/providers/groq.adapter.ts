@@ -83,4 +83,61 @@ export class GroqAdapter implements ProviderAdapter {
       },
     };
   }
+
+  async *stream(
+    request: GatewayRequest,
+    options: ProviderCallOptions
+  ): AsyncIterable<string> {
+    const model = request.model && !request.model.includes('gemini')
+      ? request.model
+      : 'openai/gpt-oss-120b';
+
+    const payload: Record<string, unknown> = {
+      model,
+      messages: request.messages,
+      stream: true,
+    };
+
+    if (request.temperature !== undefined) {
+      payload.temperature = request.temperature;
+    }
+
+    if (request.maxTokens !== undefined) {
+      payload.max_tokens = request.maxTokens;
+    }
+
+    const fetchOptions: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${options.apiKey}`,
+      },
+      body: JSON.stringify(payload),
+    };
+
+    if (options.signal) {
+      fetchOptions.signal = options.signal;
+    }
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', fetchOptions);
+
+    if (!response.ok || !response.body) {
+      const errorText = await response.text().catch(() => '');
+      throw new Error(`[Groq Stream Error] HTTP ${response.status}: ${errorText}`);
+    }
+
+    const reader = response.body.getReader(); // this method gives you a reader object that lets you read from the response stream one chunk at a time
+    const decoder = new TextDecoder(); //converts  bytes into readable text
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        yield chunk;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
 }

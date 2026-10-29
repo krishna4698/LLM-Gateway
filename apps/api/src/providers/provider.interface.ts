@@ -12,6 +12,11 @@ export interface ProviderAdapter {
     request: GatewayRequest,
     options: ProviderCallOptions
   ): Promise<GatewayResult>;
+
+  stream(
+    request: GatewayRequest,
+    options: ProviderCallOptions
+  ): AsyncIterable<string>;
 }
 
 
