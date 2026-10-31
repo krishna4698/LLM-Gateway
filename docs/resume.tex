@@ -1,0 +1,155 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[margin=0.55in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{tabularx}
+\usepackage{array}
+
+\pagenumbering{gobble}
+
+\setlength{\parindent}{0pt}
+\setlist[itemize]{
+    leftmargin=*,
+    noitemsep,
+    topsep=1pt,
+    parsep=0pt,
+    partopsep=0pt
+}
+
+\titleformat{\section}
+  {\large\bfseries}
+  {}
+  {0em}
+  {}
+  [\titlerule]
+
+\titlespacing{\section}{0pt}{6pt}{4pt}
+
+\begin{document}
+
+%---------- HEADER ----------
+\begin{center}
+    {\LARGE \textbf{Krishna Joshi}} \\[3pt]
+    +91-94640-52201 \;|\;
+    \href{mailto:krishnajoshi4698@gmail.com}{krishnajoshi4698@gmail.com}
+    \;|\;
+    \href{https://github.com/krishna4698}{github.com/krishna4698}
+    \;|\;
+    \href{https://linkedin.com/in/krishna9987}{linkedin.com/in/krishna9987}
+\end{center}
+
+%---------- TECHNICAL SKILLS ----------
+\section{Technical Skills}
+
+\textbf{Languages:} JavaScript, TypeScript, C++, SQL
+
+\textbf{Frontend:} React.js, Next.js, HTML5, Tailwind CSS
+
+\textbf{Backend:} Node.js, Express.js, REST APIs, JWT Authentication, BullMQ, SSE Streaming, MVC Architecture
+
+\textbf{Databases:} PostgreSQL, Redis, MongoDB
+
+\textbf{Cloud \& DevOps:} AWS (EC2, S3, CloudFront), Docker, CI/CD, GitHub Actions
+
+\textbf{Tools \& Concepts:} Git, Prisma, Turborepo, Monorepo Architecture, Data Structures \& Algorithms, OOP, System Design
+
+%---------- EXPERIENCE ----------
+\section{Experience}
+
+% DVERTEX
+\textbf{Software Development Intern} \hfill \textbf{July 2026 -- Present}\\
+\textbf{Dvertex Info Private Ltd.}
+
+\begin{itemize}
+    \item Working on the development and maintenance of SafaiMitra, a SaaS-based waste-management platform.
+    \item Contributing to backend development, application workflows, and database-driven features across the platform.
+    \item Working with technologies including Node.js, SQL Server, MongoDB, and Redis.
+    \item Collaborating with the development team to debug issues, implement features, and improve application reliability.
+\end{itemize}
+
+% BRINGLETECH
+\textbf{MERN Stack Intern} \hfill \textbf{Nov 2025 -- Apr 2026}\\
+\textbf{Bringletech Pvt Ltd}
+\begin{itemize}
+    \item Contributed to development of full-stack web applications using MongoDB, Express.js, React.js, and Node.js in a professional team environment.
+    \item Designed and implemented RESTful APIs for authentication, user management, and CRUD operations following MVC architecture patterns.
+    \item Implemented JWT-based authentication and role-based access control to ensure secure API endpoints across the application.
+    \item Collaborated with team using Git and GitHub for version control, code reviews, and feature branch integration.
+    \item Participated in debugging and performance optimization of backend services, improving code quality and reliability.
+\end{itemize}
+
+%---------- PROJECTS ----------
+\section{Projects}
+
+% LLM GATEWAY (NEW PROJECT)
+\textbf{LLM Gateway — Production AI Infrastructure \& Proxy}
+\hfill
+\textit{TypeScript, Next.js 16, Node.js, Redis, BullMQ, PostgreSQL, Prisma, Turborepo}
+
+\begin{itemize}
+    \item Engineered an OpenAI-compatible LLM Gateway proxy in a Turborepo monorepo with dynamic model routing (\textit{smart-chat}, \textit{fast-chat}) and automated mid-stream failover across Groq and Google Gemini providers.
+    
+    \item Designed zero-overhead asynchronous telemetry pipeline using Redis and BullMQ, offloading token consumption, latency, and status persistence to PostgreSQL without blocking real-time SSE streams.
+    
+    \item Implemented cryptographic API key management featuring SHA-256 hashing, one-time secret reveals, and in-memory TTL caching, reducing authentication database queries by over 95\%.
+    
+    \item Built bidirectional protocol normalization for agentic tool and function calling, enabling autonomous coding agents (Cursor, Cline, Aider) to execute multi-turn terminal commands and file operations seamlessly.
+    
+    \item Developed high-density developer dashboard using Next.js 16 and Tailwind CSS v4 for multi-tenant project switching, virtual key generation, and RPM rate limiting with zero-mock state management.
+\end{itemize}
+
+% 100x EXCHANGE
+\textbf{100x Exchange — Full-Stack Trading Platform}
+\hfill
+\textit{Next.js, TypeScript, Node.js, Redis, Prisma, WebSocket}
+
+\begin{itemize}
+    \item Built an event-driven trading platform with real-time market data, Redis Streams-based order processing, wallet balance management, and responsive marketplace UI serving live BTC trading.
+    
+    \item Integrated real-time candlestick charts and market data via WebSocket and REST APIs, reducing data latency by 40\% compared to polling-based approaches.
+    
+    \item Developed scalable backend microservices for authentication, trade execution, balance management, and price polling using Redis-based messaging queues handling concurrent requests.
+    
+    \item Architected monorepo structure using Turborepo with Next.js, TypeScript, Node.js, Prisma, and shared packages, reducing code duplication by 30\% across services.
+\end{itemize}
+
+% OFFICE RENTAL
+\textbf{Office Rental Management System}
+\hfill
+\textit{React.js, Node.js, Express.js, MongoDB, AWS}
+
+\begin{itemize}
+    \item Built a scalable full-stack platform for booking and managing office spaces with role-based dashboards for admins and 50+ companies, supporting end-to-end booking workflows.
+    
+    \item Designed and implemented 15+ RESTful API endpoints for CRUD operations, user management, and booking workflows using Node.js and Express.js.
+    
+    \item Engineered MongoDB database schemas for buildings, offices, and bookings applying Object-Oriented design principles, supporting 1000+ records with optimized query performance.
+    
+    \item Deployed backend on AWS EC2 and frontend on AWS S3 with CloudFront CDN, achieving 99.9\% uptime with automated CI/CD pipeline via GitHub Actions.
+    
+    \item Implemented JWT-based authentication ensuring secure role-based access control across all API endpoints.
+\end{itemize}
+
+%---------- EDUCATION ----------
+\section{Education}
+
+\textbf{Punjab Technical University} \hfill India
+
+\textbf{B.Tech in Computer Science and Engineering}
+\hfill \textbf{2022 -- 2026}
+
+CGPA: 7.7 \;|\; 
+\textit{Relevant Coursework:} Data Structures \& Algorithms, Object-Oriented Programming, Database Management Systems, Operating Systems, Computer Networks, Software Engineering, System Design
+
+%---------- CERTIFICATIONS ----------
+\section{Certifications}
+
+\begin{itemize}
+    \item \textbf{JavaScript} — Certified course covering ES6+, DOM manipulation, and asynchronous programming
+    \item \textbf{MERN Stack} — Certified in MongoDB, Express.js, React.js, and Node.js development
+\end{itemize}
+
+\end{document}
+

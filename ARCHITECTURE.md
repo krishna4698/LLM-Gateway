@@ -127,10 +127,10 @@ Client Applications (Web / Mobile / Microservices)
 | **05** | **Model Router** | Implement virtual alias routing (`smart-chat`, `fast-chat`). | ✅ **DONE** |
 | **06** | **Resilience & Fallback** | Add timeouts, bounded retries, and automatic failover on 429/5xx. | ✅ **DONE** |
 | **07** | **Database & Persistence** | PostgreSQL + Prisma schema for Users, Projects, Keys, Logs. | ✅ **DONE** |
-| **08** | **Auth & Authorization** | Validate gateway keys (`gw_live_...`), check model permissions. | 🟡 **NEXT** |
-| **09** | **Redis & Rate Limits** | Shared token-bucket rate limiting and concurrency controls. | ⏳ Pending |
-| **10** | **Cost & Token Tracking** | Versioned pricing table, token usage calculation, DB recording. | ⏳ Pending |
-| **11** | **Streaming (SSE)** | Progressive streaming, client disconnect abort, mid-stream handling. | ⏳ Pending |
+| **08** | **Auth & Authorization** | Validate gateway keys (`gw_live_...`), in-memory auth caching. | ✅ **DONE** |
+| **09** | **Redis & Rate Limits** | Shared token-bucket rate limiting and concurrency controls. | 🟡 Next Up |
+| **10** | **Cost & Token Tracking** | BullMQ + Redis async logging to Neon PostgreSQL `UsageRecord`. | ✅ **DONE** |
+| **11** | **Streaming (SSE)** | Progressive streaming (`stream: true`), client disconnect abort, mid-stream rule. | ✅ **DONE** |
 | **12** | **Dashboard & Hardening** | Next.js admin UI, charts, key creation, refresh tokens, test suite. | ⏳ Pending |
 
 ---

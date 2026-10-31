@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Definitive Guide to Tool Calling, Function Calling & Agentic Gateways</title>
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #121215;
+      --border: #27272a;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --accent: #3b82f6;
+      --accent-muted: rgba(59, 130, 246, 0.1);
+      --code-bg: #18181b;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #111827 !important;
+        font-size: 11pt;
+      }
+      .card, pre, table {
+        border-color: #e5e7eb !important;
+        background: #f9fafb !important;
+        page-break-inside: avoid;
+      }
+      pre code {
+        color: #1f2937 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: var(--accent-muted);
+      color: var(--accent);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 16px;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 40px 0 16px;
+      color: #fafafa;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 24px 0 10px;
+      color: #e4e4e7;
+    }
+
+    p {
+      color: #d4d4d8;
+      margin-bottom: 16px;
+      font-size: 14.5px;
+    }
+
+    strong {
+      color: #ffffff;
+    }
+
+    ul, ol {
+      margin-left: 24px;
+      margin-bottom: 16px;
+      color: #d4d4d8;
+      font-size: 14.5px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: #38bdf8;
+    }
+
+    p code, li code {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 12.5px;
+      color: #e0f2fe;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      font-size: 13.5px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    th {
+      background: #18181b;
+      color: #f4f4f5;
+      font-weight: 600;
+    }
+
+    td {
+      background: rgba(24, 24, 27, 0.5);
+      color: #d4d4d8;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .print-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #18181b;
+      border: 1px solid var(--border);
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 28px;
+    }
+
+    .btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="print-bar no-print">
+      <span>💡 Tip: Click <strong>"Export to PDF"</strong> to save a clean PDF copy for reading offline.</span>
+      <button class="btn" onclick="window.print()">Export to PDF</button>
+    </div>
+
+    <div class="header-badge">Architecture & Reference</div>
+    <h1>The Definitive Guide to Tool Calling, Function Calling & Agentic Gateways</h1>
+    <div class="subtitle">A complete engineering guide on how autonomous coding agents (Claude Code, Cursor, Cline, Aider) interact with LLMs, and how an LLM Gateway orchestrates them.</div>
+
+    <h2>1. Foundational Concept: How Agents Actually Work</h2>
+    <p><strong>The Common Misconception:</strong> Many developers believe that when they use Claude Code or Cursor, the LLM itself is running terminal commands, navigating directory trees, or editing code directly on their system.</p>
+    <p><strong>The Reality:</strong> No LLM can run code, open files, or access the network. An LLM is strictly a mathematical next-token prediction engine that evaluates text in and produces text out.</p>
+
+    <div class="card">
+      <h3>The Two Halves of an Autonomous System</h3>
+      <ul>
+        <li><strong>The Agent (The Host Application / Pilot):</strong> A local program on your OS (Cursor IDE, Cline VS Code Extension, or Claude Code CLI) with access to <code>fs.readFile</code>, <code>fs.writeFile</code>, and terminal shells.</li>
+        <li><strong>The LLM Gateway / Model (The Brain / Engine):</strong> Receives the prompt, identifies missing information, and emits structured JSON instructions directing the host program which function to execute.</li>
+      </ul>
+    </div>
+
+    <h2>2. The 3-Step Lifecycle of a Tool Call</h2>
+    <ol>
+      <li><strong>Step 1: Request with Tool Declarations</strong> — The client sends the user message along with a JSON Schema array of tools the agent can execute (e.g. <code>run_bash</code>, <code>read_file</code>).</li>
+      <li><strong>Step 2: Model Decision (Tool Call Emission)</strong> — The LLM responds with <code>content: null</code> and a structured <code>tool_calls</code> object containing the function name and serialized JSON arguments.</li>
+      <li><strong>Step 3: Tool Execution & Feedback Loop</strong> — The agent executes the command on your operating system and sends the output back in a follow-up request with <code>role: "tool"</code>. The LLM then answers the user using that output.</li>
+    </ol>
+
+    <h2>3. The OpenAI Standard Payloads</h2>
+
+    <h3>Step 1: The Request Payload (Sending Tools)</h3>
+    <pre><code>{
+  "model": "smart-chat",
+  "messages": [
+    { "role": "user", "content": "What files are in the current directory?" }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "run_bash",
+        "description": "Execute a command in the local shell",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "command": { "type": "string", "description": "e.g. 'ls -la' or 'dir'" }
+          },
+          "required": ["command"]
+        }
+      }
+    }
+  ]
+}</code></pre>
+
+    <h3>Step 2: The Model's Response (Emitting the Call)</h3>
+    <pre><code>{
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_01j7k8m9",
+            "type": "function",
+            "function": {
+              "name": "run_bash",
+              "arguments": "{\"command\":\"dir\"}"
+            }
+          }
+        ]
+      },
+      "finish_reason": "tool_calls"
+    }
+  ]
+}</code></pre>
+
+    <h3>Step 3: The Host Returns Execution Output</h3>
+    <pre><code>{
+  "model": "smart-chat",
+  "messages": [
+    { "role": "user", "content": "What files are in the current directory?" },
+    {
+      "role": "assistant",
+      "tool_calls": [{ "id": "call_01j7k8m9", "function": { "name": "run_bash", "arguments": "{\"command\":\"dir\"}" } }]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_01j7k8m9",
+      "content": "apps  packages  package.json  turbo.json  README.md"
+    }
+  ]
+}</code></pre>
+
+    <h2>4. How Providers Differ: What Adapters Must Translate</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>OpenAI / Groq</th>
+          <th>Google Gemini</th>
+          <th>Anthropic Claude</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Tool Schema</strong></td>
+          <td><code>tools: [{ type: "function", function }]</code></td>
+          <td><code>tools: [{ functionDeclarations: [...] }]</code></td>
+          <td><code>tools: [{ name, input_schema }]</code></td>
+        </tr>
+        <tr>
+          <td><strong>Tool Output</strong></td>
+          <td><code>message.tool_calls: [...]</code></td>
+          <td><code>parts[0].functionCall</code></td>
+          <td><code>content: [{ type: "tool_use" }]</code></td>
+        </tr>
+        <tr>
+          <td><strong>Tool Result</strong></td>
+          <td><code>role: "tool", tool_call_id</code></td>
+          <td><code>parts[0].functionResponse</code></td>
+          <td><code>content: [{ type: "tool_result" }]</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>5. Streaming Tool Calls (SSE)</h2>
+    <p>During streaming (<code>stream: true</code>), tool call arguments are sent as character fragments across multiple Server-Sent Events:</p>
+    <pre><code>data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_99","function":{"name":"run_bash"}}]}}]}
+data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"comm"}}]}}]}
+data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"and\":\""}}]}}]}
+data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"npm test\"}"}}]}}]}
+data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}
+data: [DONE]</code></pre>
+
+    <h2>6. Comparison: Our Gateway vs. OpenRouter</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>OpenRouter / Commercial SaaS</th>
+          <th>Our LLM Gateway</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>OpenAI Compatibility</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Tool / Function Calling</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Mid-Stream Failover</td>
+          <td>Proprietary</td>
+          <td>Built-in (Router)</td>
+        </tr>
+        <tr>
+          <td>Per-Token Markup</td>
+          <td>5% to 20%</td>
+          <td>0% (Direct provider cost)</td>
+        </tr>
+        <tr>
+          <td>Private Telemetry & Logs</td>
+          <td>Stored on their cloud</td>
+          <td>100% Owned in your PostgreSQL</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>7. Connecting Any Coding Agent to Our Gateway</h2>
+    <div class="card">
+      <p>Configure any OpenAI-compatible tool (Cline, Cursor, Aider, LangChain):</p>
+      <ul>
+        <li><strong>Base URL:</strong> <code>http://localhost:3001/v1</code></li>
+        <li><strong>API Key:</strong> <code>gw_live_your_gateway_key</code></li>
+        <li><strong>Model:</strong> <code>smart-chat</code> or <code>fast-chat</code></li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
