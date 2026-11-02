@@ -3,6 +3,7 @@ import { prisma } from '@repo/db';
 import { chatRouter } from './routes/chat.routes.ts';
 import { keysRouter } from './routes/keys.routes.ts';
 import './workers/usage.worker.ts';
+import { authRouter } from './routes/auth.routes.ts';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -24,6 +25,7 @@ app.use('/v1/chat', chatRouter);
 
 // Mount Key Management Routes: POST/GET/DELETE /v1/keys
 app.use('/v1/keys', keysRouter);
+app.use('/v1/auth', authRouter)
 
 // DB verification route
 app.get('/test-db', async (req, res) => {
