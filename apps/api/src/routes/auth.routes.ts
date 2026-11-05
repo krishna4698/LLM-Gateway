@@ -64,6 +64,14 @@ authRouter.post('/login', async (req, res) => {
             ipAddress:(req.ip as string) || null,
             expiresAt
         })
+        res.cookie('refreshToken', refreshToken, {
+          httpOnly:true,
+          secure:process.env.NODE_ENV==='production',
+          sameSite:'lax',
+          maxAge: 30 * 24 * 60 * 60 * 1000,
+          path:'/'
+
+        })
         return res.json({
 
             accessToken,
@@ -86,7 +94,7 @@ catch (error) {
 
 authRouter.post('/logout', async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
     const authHeader = req.headers.authorization;
     // 1. Revoke the Refresh Token in DB
     if (refreshToken) {
@@ -95,7 +103,10 @@ authRouter.post('/logout', async (req, res) => {
         revokedAt: new Date().toISOString(),
       });
     }
-    // 2. Add current Access Token JTI to Redis Denylist
+    // 2. Clear the httpOnly Cookie
+    res.clearCookie('refreshToken', { path: '/' });
+
+    // 3. Add current Access Token JTI to Redis Denylist
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.replace('Bearer ', '').trim();
       const decoded = jwt.decode(token) as { jti?: string; exp?: number };
@@ -117,7 +128,7 @@ authRouter.post('/logout', async (req, res) => {
 
 authRouter.get('/me', authenticateUser, async (req, res) => {
   try {
-    const user = await prisma.User.where({ id: req.user!.userId }).first();
+    const user = await prisma.User.where({ id: Number(req.user!.userId) }).first();
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
@@ -136,9 +147,9 @@ authRouter.get('/me', authenticateUser, async (req, res) => {
 
 authRouter.post('/refresh', async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
     if (!refreshToken) {
-      return res.status(400).json({ error: 'Missing refreshToken in request body.' });
+      return res.status(400).json({ error: 'Missing refreshToken in cookie or request body.' });
     }
 
     const incomingHash = hashToken(refreshToken);
@@ -184,6 +195,15 @@ authRouter.post('/refresh', async (req, res) => {
     });
 
     const { accessToken } = generateAccessToken(user);
+
+    // Set rotated httpOnly cookie
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
 
     return res.json({
       accessToken,

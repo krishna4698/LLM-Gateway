@@ -2,16 +2,22 @@ import express from 'express';
 import { prisma } from '@repo/db';
 import { chatRouter } from './routes/chat.routes.ts';
 import { keysRouter } from './routes/keys.routes.ts';
+import { projectsRouter } from './routes/projects.routes.ts';
 import './workers/usage.worker.ts';
 import { authRouter } from './routes/auth.routes.ts';
+import cors from "cors"
+import cookieParser from 'cookie-parser'
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Built-in middleware
+app.use(cors({
+  origin:'http://localhost:3000',
+  credentials:true
+}))
+app.use(cookieParser());
 app.use(express.json());
 
-// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -20,12 +26,11 @@ app.get('/', (req, res) => {
   res.send('LLM Gateway API is running!');
 });
  
-// Mount the Core Gateway Route: POST /v1/chat/completions (protected by auth middleware)
-app.use('/v1/chat', chatRouter);
-
-// Mount Key Management Routes: POST/GET/DELETE /v1/keys
+// Mount Routes
+app.use('/v1/auth', authRouter);
+app.use('/v1/projects', projectsRouter);
 app.use('/v1/keys', keysRouter);
-app.use('/v1/auth', authRouter)
+app.use('/v1/chat', chatRouter);
 
 // DB verification route
 app.get('/test-db', async (req, res) => {
