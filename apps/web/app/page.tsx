@@ -9,10 +9,14 @@ import { KeyTable } from '../components/modules/keys/key-table';
 import { CreateKeyModal } from '../components/modules/keys/create-key-modal';
 import { KeyRevealModal } from '../components/modules/keys/key-reveal-modal';
 import { CreateProjectModal } from '../components/modules/projects/create-project-modal';
+import { LandingPage } from '../components/modules/landing/landing-page';
 import { useGatewayStore } from '../hooks/use-gateway-store';
+import { useAppSelector } from '../store/hooks';
 import type { GeneratedKeyResult } from '../lib/types';
 
 export default function DashboardPage() {
+  const { isAuthenticated, isInitialized } = useAppSelector((state) => state.auth);
+
   const {
     projects,
     selectedProject,
@@ -35,6 +39,11 @@ export default function DashboardPage() {
     const result = createKey(params);
     setRevealedKeyData(result);
   };
+
+  // When not logged in, render the clean Developer Landing Page
+  if (isInitialized && !isAuthenticated) {
+    return <LandingPage />;
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-zinc-800 selection:text-white">

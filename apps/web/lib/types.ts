@@ -25,3 +25,23 @@ export interface GeneratedKeyResult {
   status: string;
 }
 
+export interface User {
+  id: number;
+  email: string;
+  name: string | null;
+  creditsUsd: number;
+  createdAt?: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
+}
+
+export interface RegisterResponse {
+  message: string;
+  userId: number;
+}
+
+
