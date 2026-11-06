@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'ab3ea4b19db383a75bb3e9520deee1098459ae034e9e2e2714b7737e2df65110'>;
+  StorageHashBase<'070d76628e07de404b8ba7896d4eeb91113dab03e1245c3fb0a4243dfaf56b2e'>;
 export type ExecutionHash =
   ExecutionHashBase<'32bb118815e56419dc7e9deeb4c929f23cb3349994d547099ed7eb13c3f08a5e'>;
 export type ProfileHash =
@@ -371,6 +371,13 @@ export namespace Models {
     refreshTokens: public_RefreshToken[];
     readonly [RelationKeys]?: 'projects' | 'providerKeys' | 'refreshTokens';
   };
+  export type public_newuser = {
+    email: FieldOutputTypes['public']['newuser']['email'];
+    id: FieldOutputTypes['public']['newuser']['id'];
+    name: FieldOutputTypes['public']['newuser']['name'];
+    password: FieldOutputTypes['public']['newuser']['password'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -382,6 +389,7 @@ export declare const models: {
     RefreshToken: Models.public_RefreshToken;
     UsageRecord: Models.public_UsageRecord;
     User: Models.public_User;
+    newuser: Models.public_newuser;
   };
 };
 
@@ -576,6 +584,42 @@ type ContractBase = Omit<
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly newuser: {
+              columns: {
+                readonly email: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly name: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly password: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                   readonly many: false;
                 };
@@ -1109,6 +1153,7 @@ type ContractBase = Omit<
       readonly model: 'UsageRecord';
     };
     readonly User: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+    readonly newuser: { readonly namespace: 'public' & NamespaceId; readonly model: 'newuser' };
   };
   readonly domain: {
     readonly namespaces: {
@@ -1272,6 +1317,37 @@ type ContractBase = Omit<
                 readonly provider: { readonly column: 'provider' };
                 readonly providerModel: { readonly column: 'providerModel' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly newuser: {
+            readonly fields: {
+              readonly email: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly password: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'newuser';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly email: { readonly column: 'email' };
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+                readonly password: { readonly column: 'password' };
               };
             };
           };

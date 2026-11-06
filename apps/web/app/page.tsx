@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Plus, KeyRound, BarChart3, Route, Sliders, Shield, Terminal } from 'lucide-react';
+import { Plus, KeyRound, BarChart3, Route, Sliders, Shield, Terminal, Loader2 } from 'lucide-react';
 import { TopNav } from '../components/layout/top-nav';
 import { Button } from '../components/ui/button';
 import { EmptyKeysState } from '../components/modules/keys/empty-keys-state';
@@ -10,22 +10,38 @@ import { CreateKeyModal } from '../components/modules/keys/create-key-modal';
 import { KeyRevealModal } from '../components/modules/keys/key-reveal-modal';
 import { CreateProjectModal } from '../components/modules/projects/create-project-modal';
 import { LandingPage } from '../components/modules/landing/landing-page';
-import { useGatewayStore } from '../hooks/use-gateway-store';
 import { useAppSelector } from '../store/hooks';
-import type { GeneratedKeyResult } from '../lib/types';
+import { useProjectsQuery, useCreateProjectMutation } from '../api/projects/projects.queries';
+import { useKeysQuery, useCreateKeyMutation, useRevokeKeyMutation } from '../api/keys/keys.queries';
+import type { GeneratedKeyResult, Project } from '../lib/types';
 
 export default function DashboardPage() {
   const { isAuthenticated, isInitialized } = useAppSelector((state) => state.auth);
 
-  const {
-    projects,
-    selectedProject,
-    setSelectedProjectId,
-    keys,
-    createKey,
-    revokeKey,
-    createProject,
-  } = useGatewayStore();
+  // 1. Real Projects Query
+  const { data: projects = [], isLoading: isLoadingProjects } = useProjectsQuery();
+
+  // 2. Track selected project ID
+  const [selectedProjectId, setSelectedProjectId] = React.useState<number | null>(null);
+
+  // Determine active project (defaulting to first project from DB)
+  const selectedProject: Project = React.useMemo(() => {
+    if (selectedProjectId) {
+      const found = projects.find((p) => p.id === selectedProjectId);
+      if (found) return found;
+    }
+    return projects[0] || { id: 0, name: 'Default Project', createdAt: new Date().toISOString() };
+  }, [projects, selectedProjectId]);
+
+  // 3. Real Keys Query scoped to the active project
+  const { data: keys = [], isLoading: isLoadingKeys } = useKeysQuery(
+    selectedProject.id ? selectedProject.id : null
+  );
+
+  // 4. Real Mutations
+  const createProjectMutation = useCreateProjectMutation();
+  const createKeyMutation = useCreateKeyMutation(selectedProject.id || null);
+  const revokeKeyMutation = useRevokeKeyMutation(selectedProject.id || null);
 
   const [isCreateKeyModalOpen, setIsCreateKeyModalOpen] = React.useState(false);
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = React.useState(false);
@@ -36,13 +52,48 @@ export default function DashboardPage() {
     rateLimitRpm: number;
     monthlyCapUsd?: number | null;
   }) => {
-    const result = createKey(params);
-    setRevealedKeyData(result);
+    if (!selectedProject.id) return;
+
+    createKeyMutation.mutate(
+      {
+        name: params.name,
+        projectId: selectedProject.id,
+        rateLimitRpm: params.rateLimitRpm,
+        monthlyCapUsd: params.monthlyCapUsd,
+      },
+      {
+        onSuccess: (result) => {
+          setRevealedKeyData(result);
+        },
+      }
+    );
+  };
+
+  const handleCreateProject = (name: string) => {
+    createProjectMutation.mutate(name, {
+      onSuccess: (newProj) => {
+        setSelectedProjectId(newProj.id);
+      },
+    });
+  };
+
+  const handleRevokeKey = (keyId: number) => {
+    revokeKeyMutation.mutate(keyId);
   };
 
   // When not logged in, render the clean Developer Landing Page
   if (isInitialized && !isAuthenticated) {
     return <LandingPage />;
+  }
+
+  // Loading spinner while authenticating / fetching initial projects
+  if (!isInitialized || (isAuthenticated && isLoadingProjects && projects.length === 0)) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400">
+        <Loader2 className="w-6 h-6 animate-spin text-zinc-500 mr-3" />
+        <span className="text-sm font-mono">Loading workspace...</span>
+      </div>
+    );
   }
 
   return (
@@ -77,7 +128,11 @@ export default function DashboardPage() {
             </div>
 
             <div>
-              <Button onClick={() => setIsCreateKeyModalOpen(true)} size="sm">
+              <Button
+                onClick={() => setIsCreateKeyModalOpen(true)}
+                size="sm"
+                disabled={!selectedProject.id}
+              >
                 <Plus className="w-4 h-4" />
                 <span>Create New Key</span>
               </Button>
@@ -146,14 +201,19 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Conditional Empty State or Table */}
-          {keys.length === 0 ? (
+          {/* Conditional Empty State, Loading, or Table */}
+          {isLoadingKeys ? (
+            <div className="py-12 flex items-center justify-center text-zinc-500 text-xs gap-2 font-mono">
+              <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+              <span>Loading keys from database...</span>
+            </div>
+          ) : keys.length === 0 ? (
             <EmptyKeysState
               projectName={selectedProject.name}
               onCreateKeyClick={() => setIsCreateKeyModalOpen(true)}
             />
           ) : (
-            <KeyTable keys={keys} onRevokeKey={revokeKey} />
+            <KeyTable keys={keys} onRevokeKey={handleRevokeKey} />
           )}
         </div>
 
@@ -201,7 +261,7 @@ export default function DashboardPage() {
       <CreateProjectModal
         isOpen={isCreateProjectModalOpen}
         onClose={() => setIsCreateProjectModalOpen(false)}
-        onCreateProject={createProject}
+        onCreateProject={handleCreateProject}
       />
     </div>
   );

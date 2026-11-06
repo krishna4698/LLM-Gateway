@@ -31,6 +31,10 @@
     "User": {
       "model": "User",
       "namespace": "public"
+    },
+    "newuser": {
+      "model": "newuser",
+      "namespace": "public"
     }
   },
   "domain": {
@@ -985,6 +989,57 @@
               "namespaceId": "public",
               "table": "User"
             }
+          },
+          "newuser": {
+            "fields": {
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "password": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "email": {
+                  "column": "email"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "password": {
+                  "column": "password"
+                }
+              },
+              "namespaceId": "public",
+              "table": "newuser"
+            }
           }
         }
       }
@@ -1726,6 +1781,42 @@
                   ]
                 }
               ]
+            },
+            "newuser": {
+              "columns": {
+                "email": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "password": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
             }
           }
         },
@@ -1733,7 +1824,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ab3ea4b19db383a75bb3e9520deee1098459ae034e9e2e2714b7737e2df65110"
+    "storageHash": "070d76628e07de404b8ba7896d4eeb91113dab03e1245c3fb0a4243dfaf56b2e"
   },
   "execution": {
     "executionHash": "32bb118815e56419dc7e9deeb4c929f23cb3349994d547099ed7eb13c3f08a5e",

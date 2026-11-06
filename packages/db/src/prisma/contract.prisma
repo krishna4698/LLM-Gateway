@@ -101,3 +101,13 @@ model UsageRecord {
   errorMessage     String?
   createdAt        TimestamptzString @default(now())
 }
+
+
+
+model newuser{
+
+  id           Int       @id @default(autoincrement())
+  email        String   
+  name         String
+  password     String
+}
