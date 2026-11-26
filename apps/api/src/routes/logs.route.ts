@@ -17,7 +17,6 @@ logsRouter.get('/', authenticateUser, async (req, res) => {
       });
     }
 
-    // Security Check: Verify the project belongs to the authenticated user
     const project = await prisma.Project.where({
       id: parsedProjectId,
       userId,
@@ -32,17 +31,14 @@ logsRouter.get('/', authenticateUser, async (req, res) => {
     const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 100);
     const offset = Math.max(Number(req.query.offset) || 0, 0);
 
-    // Fetch all usage records for this project
     const allRecords = await prisma.UsageRecord.where({
       projectId: parsedProjectId,
     }).all();
 
-    // Sort newest first
+   
     allRecords.sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-
-    // Compute project-wide summary metrics (before pagination/filtering)
     let successCount = 0;
     let errorCount = 0;
     let totalInputTokens = 0;
