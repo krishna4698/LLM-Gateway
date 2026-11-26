@@ -44,4 +44,46 @@ export interface RegisterResponse {
   userId: number;
 }
 
+export interface UsageLog {
+  id: number;
+  requestId: string;
+  projectId: number | null;
+  apiKeyId: number | null;
+  modelAlias: string;
+  provider: string;
+  providerModel: string;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  costUsd: number;
+  latencyMs: number | null;
+  status: string;
+  statusCode: number;
+  createdAt: string;
+}
+
+export interface LogsSummary {
+  totalRequests: number;
+  successCount: number;
+  errorCount: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalTokens: number;
+  totalCostUsd: number;
+  avgLatencyMs: number;
+}
+
+export interface LogsPagination {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
+export interface LogsResponse {
+  summary: LogsSummary;
+  pagination: LogsPagination;
+  data: UsageLog[];
+}
+
 

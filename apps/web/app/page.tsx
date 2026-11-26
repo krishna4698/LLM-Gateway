@@ -10,9 +10,11 @@ import { CreateKeyModal } from '../components/modules/keys/create-key-modal';
 import { KeyRevealModal } from '../components/modules/keys/key-reveal-modal';
 import { CreateProjectModal } from '../components/modules/projects/create-project-modal';
 import { LandingPage } from '../components/modules/landing/landing-page';
+import { LogsView } from '../components/modules/logs/logs-view';
 import { useAppSelector } from '../store/hooks';
 import { useProjectsQuery, useCreateProjectMutation } from '../api/projects/projects.queries';
 import { useKeysQuery, useCreateKeyMutation, useRevokeKeyMutation } from '../api/keys/keys.queries';
+import { useLogsQuery } from '../api/logs/logs.queries';
 import type { GeneratedKeyResult, Project } from '../lib/types';
 
 export default function DashboardPage() {
@@ -33,9 +35,13 @@ export default function DashboardPage() {
     return projects[0] || { id: 0, name: 'Default Project', createdAt: new Date().toISOString() };
   }, [projects, selectedProjectId]);
 
-  // 3. Real Keys Query scoped to the active project
+  // 3. Real Keys & Logs Queries scoped to the active project
   const { data: keys = [], isLoading: isLoadingKeys } = useKeysQuery(
     selectedProject.id ? selectedProject.id : null
+  );
+  const { data: logsSummaryData } = useLogsQuery(
+    selectedProject.id ? selectedProject.id : null,
+    { limit: 1, offset: 0 }
   );
 
   // 4. Real Mutations
@@ -43,6 +49,7 @@ export default function DashboardPage() {
   const createKeyMutation = useCreateKeyMutation(selectedProject.id || null);
   const revokeKeyMutation = useRevokeKeyMutation(selectedProject.id || null);
 
+  const [activeTab, setActiveTab] = React.useState<'keys' | 'logs'>('keys');
   const [isCreateKeyModalOpen, setIsCreateKeyModalOpen] = React.useState(false);
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = React.useState(false);
   const [revealedKeyData, setRevealedKeyData] = React.useState<GeneratedKeyResult | null>(null);
@@ -117,13 +124,17 @@ export default function DashboardPage() {
                 <span>/</span>
                 <span className="text-zinc-400">{selectedProject.name}</span>
                 <span>/</span>
-                <span className="text-zinc-200">API Keys</span>
+                <span className="text-zinc-200">
+                  {activeTab === 'keys' ? 'API Keys' : 'Usage & Logs'}
+                </span>
               </div>
               <h1 className="text-xl font-semibold text-zinc-100 tracking-tight">
-                Gateway API Keys
+                {activeTab === 'keys' ? 'Gateway API Keys' : 'Usage & Request Logs'}
               </h1>
               <p className="text-xs text-zinc-400 mt-0.5">
-                Issue and manage Bearer tokens for authenticating client applications through your proxy.
+                {activeTab === 'keys'
+                  ? 'Issue and manage Bearer tokens for authenticating client applications through your proxy.'
+                  : 'Inspect request latency, token consumption, provider routing, and status codes.'}
               </p>
             </div>
 
@@ -141,8 +152,15 @@ export default function DashboardPage() {
 
           {/* Navigation Tabs */}
           <div className="flex items-center gap-6 border-b border-transparent">
-            <button className="flex items-center gap-2 pb-3 border-b-2 border-white text-xs font-medium text-white transition-colors">
-              <KeyRound className="w-3.5 h-3.5 text-zinc-200" />
+            <button
+              onClick={() => setActiveTab('keys')}
+              className={`flex items-center gap-2 pb-3 border-b-2 text-xs font-medium transition-colors ${
+                activeTab === 'keys'
+                  ? 'border-white text-white'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              <KeyRound className={`w-3.5 h-3.5 ${activeTab === 'keys' ? 'text-zinc-200' : ''}`} />
               <span>API Keys</span>
               <span className="text-[10px] bg-zinc-900 border border-zinc-800 px-1.5 py-0.2 rounded-full font-mono text-zinc-400">
                 {keys.length}
@@ -150,12 +168,18 @@ export default function DashboardPage() {
             </button>
 
             <button
-              disabled
-              className="flex items-center gap-2 pb-3 border-b-2 border-transparent text-xs font-medium text-zinc-500 hover:text-zinc-400 cursor-not-allowed opacity-60"
+              onClick={() => setActiveTab('logs')}
+              className={`flex items-center gap-2 pb-3 border-b-2 text-xs font-medium transition-colors ${
+                activeTab === 'logs'
+                  ? 'border-white text-white'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-300'
+              }`}
             >
-              <BarChart3 className="w-3.5 h-3.5" />
+              <BarChart3 className={`w-3.5 h-3.5 ${activeTab === 'logs' ? 'text-zinc-200' : ''}`} />
               <span>Usage & Logs</span>
-              <span className="text-[9px] uppercase tracking-wider text-zinc-600 font-mono">Soon</span>
+              <span className="text-[10px] bg-zinc-900 border border-zinc-800 px-1.5 py-0.2 rounded-full font-mono text-zinc-400">
+                {logsSummaryData?.summary.totalRequests ?? 0}
+              </span>
             </button>
 
             <button
@@ -180,69 +204,77 @@ export default function DashboardPage() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto p-6">
-        {/* Keys Panel */}
-        <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl overflow-hidden shadow-sm">
-          <div className="px-5 py-4 border-b border-zinc-800/60 flex items-center justify-between bg-zinc-900/20">
-            <div>
-              <h2 className="text-sm font-semibold text-zinc-100">Active Keys</h2>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                Keys scoped to <strong className="text-zinc-300 font-medium">{selectedProject.name}</strong>. Secret hashes are securely stored in SHA-256.
-              </p>
-            </div>
-            {keys.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsCreateKeyModalOpen(true)}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Key</span>
-              </Button>
-            )}
-          </div>
+        {activeTab === 'logs' ? (
+          selectedProject.id ? (
+            <LogsView projectId={selectedProject.id} projectName={selectedProject.name} />
+          ) : null
+        ) : (
+          <>
+            {/* Keys Panel */}
+            <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl overflow-hidden shadow-sm">
+              <div className="px-5 py-4 border-b border-zinc-800/60 flex items-center justify-between bg-zinc-900/20">
+                <div>
+                  <h2 className="text-sm font-semibold text-zinc-100">Active Keys</h2>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Keys scoped to <strong className="text-zinc-300 font-medium">{selectedProject.name}</strong>. Secret hashes are securely stored in SHA-256.
+                  </p>
+                </div>
+                {keys.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsCreateKeyModalOpen(true)}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Key</span>
+                  </Button>
+                )}
+              </div>
 
-          {/* Conditional Empty State, Loading, or Table */}
-          {isLoadingKeys ? (
-            <div className="py-12 flex items-center justify-center text-zinc-500 text-xs gap-2 font-mono">
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
-              <span>Loading keys from database...</span>
+              {/* Conditional Empty State, Loading, or Table */}
+              {isLoadingKeys ? (
+                <div className="py-12 flex items-center justify-center text-zinc-500 text-xs gap-2 font-mono">
+                  <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                  <span>Loading keys from database...</span>
+                </div>
+              ) : keys.length === 0 ? (
+                <EmptyKeysState
+                  projectName={selectedProject.name}
+                  onCreateKeyClick={() => setIsCreateKeyModalOpen(true)}
+                />
+              ) : (
+                <KeyTable keys={keys} onRevokeKey={handleRevokeKey} />
+              )}
             </div>
-          ) : keys.length === 0 ? (
-            <EmptyKeysState
-              projectName={selectedProject.name}
-              onCreateKeyClick={() => setIsCreateKeyModalOpen(true)}
-            />
-          ) : (
-            <KeyTable keys={keys} onRevokeKey={handleRevokeKey} />
-          )}
-        </div>
 
-        {/* Security & Quick Start Guide Footnote */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 rounded-xl bg-zinc-900/20 border border-zinc-800/60 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 shrink-0">
-              <Shield className="w-4 h-4 text-zinc-300" />
-            </div>
-            <div>
-              <h3 className="text-xs font-semibold text-zinc-200">SHA-256 Key Hashing</h3>
-              <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
-                Raw secrets (<code className="text-zinc-400 font-mono">gw_live_...</code>) are never stored in the database in plaintext. If a key is revoked, requests are blocked immediately with 401 Unauthorized.
-              </p>
-            </div>
-          </div>
+            {/* Security & Quick Start Guide Footnote */}
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl bg-zinc-900/20 border border-zinc-800/60 flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 shrink-0">
+                  <Shield className="w-4 h-4 text-zinc-300" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold text-zinc-200">SHA-256 Key Hashing</h3>
+                  <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                    Raw secrets (<code className="text-zinc-400 font-mono">gw_live_...</code>) are never stored in the database in plaintext. If a key is revoked, requests are blocked immediately with 401 Unauthorized.
+                  </p>
+                </div>
+              </div>
 
-          <div className="p-4 rounded-xl bg-zinc-900/20 border border-zinc-800/60 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 shrink-0">
-              <Terminal className="w-4 h-4 text-zinc-300" />
+              <div className="p-4 rounded-xl bg-zinc-900/20 border border-zinc-800/60 flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 shrink-0">
+                  <Terminal className="w-4 h-4 text-zinc-300" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold text-zinc-200">Quick Integration</h3>
+                  <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                    Connect using the official OpenAI SDK with <code className="text-zinc-400 font-mono">baseURL: http://localhost:3001/v1</code> and pass your gateway key as the Bearer token.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h3 className="text-xs font-semibold text-zinc-200">Quick Integration</h3>
-              <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
-                Connect using the official OpenAI SDK with <code className="text-zinc-400 font-mono">baseURL: http://localhost:3001/v1</code> and pass your gateway key as the Bearer token.
-              </p>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </main>
 
       {/* Modals */}
