@@ -5,6 +5,7 @@ import { keysRouter } from './routes/keys.routes.ts';
 import { projectsRouter } from './routes/projects.routes.ts';
 import './workers/usage.worker.ts';
 import { authRouter } from './routes/auth.routes.ts';
+import { logsRouter } from './routes/logs.route.ts';
 import cors from "cors"
 import cookieParser from 'cookie-parser'
 
@@ -31,6 +32,7 @@ app.use('/v1/auth', authRouter);
 app.use('/v1/projects', projectsRouter);
 app.use('/v1/keys', keysRouter);
 app.use('/v1/chat', chatRouter);
+app.use('/v1/logs', logsRouter);
 
 // DB verification route
 app.get('/test-db', async (req, res) => {

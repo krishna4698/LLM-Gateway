@@ -68,7 +68,7 @@ export async function routeAndExecute(
       //  await Promise.race([
        await  adapter.generate(
         { ...request, model: deployment.providerModel },
-        { apiKey, signal:combinedSignal }
+        { apiKey, signal }
       )
       // timeout(5000)
       // ])
